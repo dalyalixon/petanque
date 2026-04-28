@@ -72,13 +72,13 @@ function afficherCreneaux() {
 
       <div class="teams">
         <div class="team">
-          <strong>Équipe A</strong>
+          <strong></strong>
           <p>Joueur 1 : ${joueurs[0] ? escapeHtml(joueurs[0].prenom + " " + joueurs[0].nom) : "—"}</p>
           <p>Joueur 2 : ${joueurs[1] ? escapeHtml(joueurs[1].prenom + " " + joueurs[1].nom) : "—"}</p>
         </div>
 
         <div class="team">
-          <strong>Équipe B</strong>
+          <strong></strong>
           <p>Joueur 3 : ${joueurs[2] ? escapeHtml(joueurs[2].prenom + " " + joueurs[2].nom) : "—"}</p>
           <p>Joueur 4 : ${joueurs[3] ? escapeHtml(joueurs[3].prenom + " " + joueurs[3].nom) : "—"}</p>
         </div>
