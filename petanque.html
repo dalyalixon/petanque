@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lixon – Inscription pétanque</title>
+  <link rel="stylesheet" href="petanque.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="tag">Afterwork LIXON</p>
+      <h1>Inscription pétanque</h1>
+      <p>Choisissez votre créneau. Maximum 4 joueurs par créneau : 2 contre 2.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card form-card">
+      <h2>S’inscrire</h2>
+
+      <label for="nom">Nom *</label>
+      <input type="text" id="nom" placeholder="Ex : DUPONT" />
+
+      <label for="prenom">Prénom *</label>
+      <input type="text" id="prenom" placeholder="Ex : Jean" />
+
+      <label for="creneau">Créneau *</label>
+      <select id="creneau">
+        <option value="">Sélectionnez un créneau</option>
+      </select>
+
+      <button id="btnInscription">Valider l’inscription</button>
+
+      <p id="message" class="message"></p>
+    </section>
+
+    <section class="card">
+      <h2>Créneaux disponibles</h2>
+      <div id="listeCreneaux" class="slots"></div>
+    </section>
+  </main>
+
+  <script src="petanque.js?v=2"></script>
+</body>
+</html>
