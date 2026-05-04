@@ -28,6 +28,7 @@ export default async function handler(req, res) {
       return json(res, 500, { error: "Configuration Supabase manquante." });
     }
 
+    // ================== GET ==================
     if (req.method === "GET") {
       const { data, error } = await supabase
         .from("inscription")
@@ -55,6 +56,7 @@ export default async function handler(req, res) {
       return json(res, 200, { inscriptions });
     }
 
+    // ================== POST ==================
     if (req.method === "POST") {
       const body =
         req.body && Object.keys(req.body).length
@@ -75,8 +77,9 @@ export default async function handler(req, res) {
         return json(res, 400, { error: "Créneau invalide." });
       }
 
+      // 🔒 vérifier combien de joueurs
       const { data: existing, error: countError } = await supabase
-        .from("inscriptions")
+        .from("inscription")
         .select("*")
         .eq("creneau", creneau);
 
@@ -91,9 +94,10 @@ export default async function handler(req, res) {
         return json(res, 409, { error: "Ce créneau est complet." });
       }
 
+      // 🔒 éviter doublon
       const dejaInscrit = joueurs.some(j =>
-        String(j.nom || "").toLowerCase() === nom.toLowerCase() &&
-        String(j.prenom || "").toLowerCase() === prenom.toLowerCase()
+        String(j.nom).toLowerCase() === nom.toLowerCase() &&
+        String(j.prenom).toLowerCase() === prenom.toLowerCase()
       );
 
       if (dejaInscrit) {
@@ -102,8 +106,9 @@ export default async function handler(req, res) {
         });
       }
 
+      // ➕ insertion
       const { error: insertError } = await supabase
-        .from("inscriptions")
+        .from("inscription")
         .insert([
           {
             nom,
@@ -124,11 +129,14 @@ export default async function handler(req, res) {
     }
 
     return json(res, 405, { error: "Méthode non autorisée." });
+
   } catch (err) {
     console.error("Erreur API pétanque:", err);
     return json(res, 500, { error: "Erreur serveur." });
   }
 }
+
+// ================== HELPERS ==================
 
 function json(res, status, data) {
   res.statusCode = status;
