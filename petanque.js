@@ -91,13 +91,13 @@ function afficherCreneaux() {
 
       <div class="teams">
         <div class="team">
-          <strong>Équipe A</strong>
+          <strong></strong>
           <p>Joueur 1 : ${joueursJour[0] ? joueursJour[0].prenom + " " + joueursJour[0].nom : "—"}</p>
           <p>Joueur 2 : ${joueursJour[1] ? joueursJour[1].prenom + " " + joueursJour[1].nom : "—"}</p>
         </div>
 
         <div class="team">
-          <strong>Équipe B</strong>
+          <strong></strong>
           <p>Joueur 3 : ${joueursJour[2] ? joueursJour[2].prenom + " " + joueursJour[2].nom : "—"}</p>
           <p>Joueur 4 : ${joueursJour[3] ? joueursJour[3].prenom + " " + joueursJour[3].nom : "—"}</p>
         </div>
