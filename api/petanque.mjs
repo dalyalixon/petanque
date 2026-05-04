@@ -1,7 +1,4 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-
-const DATA_FILE = path.join(process.cwd(), "petanque-inscriptions.json");
+import { createClient } from "@supabase/supabase-js";
 
 const CRENEAUX = [
   "Mardi 05/05 - 17h00",
@@ -20,60 +17,109 @@ const CRENEAUX = [
   "Jeudi 28/05 - 17h45"
 ];
 
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
 export default async function handler(req, res) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+      return json(res, 500, { error: "Configuration Supabase manquante." });
+    }
+
     if (req.method === "GET") {
-      const inscriptions = await readData();
+      const { data, error } = await supabase
+        .from("inscriptions")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Erreur Supabase GET:", error);
+        return json(res, 500, { error: "Erreur récupération inscriptions." });
+      }
+
+      const inscriptions = {};
+
+      for (const row of data || []) {
+        if (!inscriptions[row.creneau]) inscriptions[row.creneau] = [];
+
+        inscriptions[row.creneau].push({
+          id: row.id,
+          nom: row.nom,
+          prenom: row.prenom,
+          date_inscription: row.created_at
+        });
+      }
+
       return json(res, 200, { inscriptions });
     }
 
     if (req.method === "POST") {
-      const body = req.body && Object.keys(req.body).length
-        ? req.body
-        : await getRawJson(req);
+      const body =
+        req.body && Object.keys(req.body).length
+          ? req.body
+          : await getRawJson(req);
 
       const nom = String(body.nom || "").trim().toUpperCase();
       const prenom = String(body.prenom || "").trim();
       const creneau = String(body.creneau || "").trim();
 
       if (!nom || !prenom || !creneau) {
-        return json(res, 400, { error: "Nom, prénom et créneau sont obligatoires." });
+        return json(res, 400, {
+          error: "Nom, prénom et créneau sont obligatoires."
+        });
       }
 
       if (!CRENEAUX.includes(creneau)) {
         return json(res, 400, { error: "Créneau invalide." });
       }
 
-      const inscriptions = await readData();
-      const joueurs = inscriptions[creneau] || [];
+      const { data: existing, error: countError } = await supabase
+        .from("inscriptions")
+        .select("*")
+        .eq("creneau", creneau);
+
+      if (countError) {
+        console.error("Erreur Supabase count:", countError);
+        return json(res, 500, { error: "Erreur vérification créneau." });
+      }
+
+      const joueurs = existing || [];
 
       if (joueurs.length >= 4) {
         return json(res, 409, { error: "Ce créneau est complet." });
       }
 
       const dejaInscrit = joueurs.some(j =>
-        j.nom.toLowerCase() === nom.toLowerCase() &&
-        j.prenom.toLowerCase() === prenom.toLowerCase()
+        String(j.nom || "").toLowerCase() === nom.toLowerCase() &&
+        String(j.prenom || "").toLowerCase() === prenom.toLowerCase()
       );
 
       if (dejaInscrit) {
-        return json(res, 409, { error: "Cette personne est déjà inscrite à ce créneau." });
+        return json(res, 409, {
+          error: "Cette personne est déjà inscrite à ce créneau."
+        });
       }
 
-      joueurs.push({
-        nom,
-        prenom,
-        date_inscription: new Date().toISOString()
-      });
+      const { error: insertError } = await supabase
+        .from("inscriptions")
+        .insert([
+          {
+            nom,
+            prenom,
+            creneau
+          }
+        ]);
 
-      inscriptions[creneau] = joueurs;
-
-      await writeData(inscriptions);
+      if (insertError) {
+        console.error("Erreur Supabase insert:", insertError);
+        return json(res, 500, { error: "Erreur enregistrement inscription." });
+      }
 
       return json(res, 200, {
         ok: true,
-        message: "Inscription confirmée.",
-        inscriptions
+        message: "Inscription confirmée."
       });
     }
 
@@ -82,19 +128,6 @@ export default async function handler(req, res) {
     console.error("Erreur API pétanque:", err);
     return json(res, 500, { error: "Erreur serveur." });
   }
-}
-
-async function readData() {
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf8");
-    return JSON.parse(raw || "{}");
-  } catch {
-    return {};
-  }
-}
-
-async function writeData(data) {
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
 }
 
 function json(res, status, data) {
