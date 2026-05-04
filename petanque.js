@@ -107,7 +107,6 @@ function afficherCreneaux() {
     listeCreneaux.appendChild(div);
   });
 }
-
 /* ================== CHARGEMENT ================== */
 async function chargerInscriptions() {
   try {
