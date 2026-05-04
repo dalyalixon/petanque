@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
       const { data, error } = await supabase
-        .from("inscriptions")
+        .from("inscription")
         .select("*")
         .order("created_at", { ascending: true });
 
